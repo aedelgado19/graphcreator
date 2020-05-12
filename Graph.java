@@ -45,13 +45,15 @@ public class Graph implements ActionListener, MouseListener {
 	final int EDGE_SECOND = 2; 
 	int state = NODE_CREATE;
 	char nodeName = 65;
+	char edgeName = 49;
 	Node first = null;
+	int TotalPathsFound = 0;
 	
 	//list tracks what nodes are connected
 	ArrayList<String> connectedList = new ArrayList<String>();
 	
 	//ArrayList<Edge> edgeList = new ArrayList<Edge>();
-	ArrayList<Node> pathList = new ArrayList<Node>();
+	//ArrayList<Node> pathList = new ArrayList<Node>();
 	
 	//list tracks what nodes have been completed
 	ArrayList<ArrayList<Node>> completed = new ArrayList<ArrayList<Node>>();
@@ -136,6 +138,15 @@ public class Graph implements ActionListener, MouseListener {
 		}
 		else if (state == EDGE_FIRST) { //check to see if you've clicked previous node
 			//pass X and Y coord, get back node
+			if (edgeName < 57) { //57 = 9
+				edgeName++;
+			}
+			else {
+				edgeName = 49;
+			}
+			labelsTF.setText(edgeName + "");
+			
+			
 			Node n = panel.getNode(e.getX(), e.getY());
 			if (n != null) {
 				first = n;
@@ -185,6 +196,7 @@ public class Graph implements ActionListener, MouseListener {
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		ArrayList<Node> path = new ArrayList<Node>();
 		
 		if (e.getSource().equals(nodeB)) { // if node button is selected
 			nodeB.setBackground(Color.BLUE);
@@ -221,7 +233,6 @@ public class Graph implements ActionListener, MouseListener {
 				connectedList.add(panel.getNode(firstNode.getText()).getLabel());
 				ArrayList<String> edges = panel.getConnectedLabels(firstNode.getText());
 				for (int a = 0; a < edges.size(); a++) {//initial connection
-					//check each connected node by adding each edges that was corresponding to an edge in the graph to queue
 					queue.enqueue(edges.get(a));
 				}
 				//find all connections
@@ -253,21 +264,17 @@ public class Graph implements ActionListener, MouseListener {
 			 * 
 			 * 1. get Node that comes from text field to find where the path starts
 			 * 
-			 * 2. Check if all nodes are connected:
-			 * 		when you add a node, add it to the list called conNodeList.
-			 * 		when you add an edge, delete the two nodes it connects to from conNodeList
-			 * 		when travellingSalesman button is pressed, check to see if there are contents in conNodeList
-			 * 		if there is something in connectedList, display error message saying that not all nodes are connected
-			 * 		when connectedList is empty, proceed
 			 * 
-			 * 3. Recursively call travelling() to find paths
-			 * 
-			 * 4. Travelling() does:
+			 * 2. Recursively call travelling() to find paths
 			 * 		creates list of paths that result from starting node
 			 * 		if path length = num of nodes, you have completed the path
 			 * 		for each completed path, get the value of the edge length, add together
+			 * 
+			 * 3. Check if all nodes are connected:
+			 * 		A. Added nodes are already in nodeList (refer to nodeList.getSize()
+			 *      B. Take a path and see if it hits every node in nodeList, else: error
 			 * 		
-			 * 5. Find shortest path:
+			 * 4. Find shortest path:
 			 * 		assign the first valid path to shortestPath
 			 * 		keep looping
 			 * 		if current path < shortestPath, reassign shortestPath to current path
@@ -283,17 +290,13 @@ public class Graph implements ActionListener, MouseListener {
 				ArrayList<String> edges = panel.getConnectedLabels(salesmanStartTF.getText()); 
 			}
 			
-			//2. if there is something in connectedList, display error message saying that not all nodes are connected
-			for (int i = 0; i < panel.conNodeList.size(); i++) {
-				if(panel.conNodeList.isEmpty() == false) {
-					JOptionPane.showMessageDialog(frame, "Not all nodes are connected.");
-				}
-			}
+			//2. call travelling() to find paths
+			path.add(panel.getNode(salesmanStartTF.getText()));
+			travelling(panel.getNode(salesmanStartTF.getText()), path, 0);
+			System.out.println("TotalPathsFound " + TotalPathsFound);
+			// 3. Check for disconnected nodes
 			
-			//3. call travelling() to find paths
-			travelling(panel.getNode(salesmanStartTF.getText()), new ArrayList<Node>(), 0);
-			
-			//5. Find cheapest path 
+			//4. Find cheapest path 
 			/*Node cheapestPath = pathList.get(0);
 			for (int i = 0; i < pathList.size(); i++) {
 				Node currentPath = pathList.get(i);
@@ -311,38 +314,6 @@ public class Graph implements ActionListener, MouseListener {
 			*/
 			
 			
-			/*double check that all nodes are connected, if they're not, error message
-			if (panel.getNode(salesmanStartTF.getText()) != null) {
-				ArrayList<Node> pathList = new ArrayList<Node>();
-				pathList.add(panel.getNode(salesmanStartTF.getText()));
-				
-				//from .equals(connected) above
-				Queue queue = new Queue();
-				connectedList.add(panel.getNode(firstNode.getText()).getLabel());
-				ArrayList<String> edges = panel.getConnectedLabels(firstNode.getText());
-				for (int a = 0; a < edges.size(); a++) {//initial connection
-					queue.enqueue(edges.get(a));
-					while (queue.isEmpty() == false) {
-						String currentNode = queue.dequeue();
-						if (connectedList.contains(currentNode) == false) {
-							connectedList.add(currentNode);
-						}
-						edges = panel.getConnectedLabels(currentNode);
-						for (int b = 0; b < edges.size(); b++) { //check if already in
-							if (connectedList.contains(edges.get(b)) == false) {
-								queue.enqueue(edges.get(b));	
-							}
-						}
-						if(connectedList.contains(secondNode.getText())) {
-							//*********add to list or something****
-					
-						}
-						else {
-							JOptionPane.showMessageDialog(frame, "Not all nodes are connected.");	
-						}
-					}
-					
-					*/
 			
 					
 				}
@@ -352,23 +323,17 @@ public class Graph implements ActionListener, MouseListener {
 	public void travelling(Node n, ArrayList<Node> path, int total) {
 		//depth-first search: find complete path by going as far as you can in graph, 
 		//then if you can't find way out, for loop ends, go back to previous call of travelling()
-		
+		int i = 0;
 		if(panel.nodeList.size() == path.size()) {
-			System.out.println("Complete path found");
-			for (int i = 0; i < path.size(); i++) {
+			System.out.println("Complete path found with cost " + total + ".");
+			TotalPathsFound++;
+			for (i = 0; i < path.size(); i++) {
 				System.out.println(path.get(i).getLabel());
+				// Fixme: Save completed path somewhere and also cost
 			}
 		}
 		
-		//algorithm:
-	
-		/* ***** Do this next! ***** if # of nodes in path = number of nodes, add path to completed list (completed.add(path)), 
-		 * remove last thing in path
-		 * return
-		 * else
-		 */ 
-		
-		for (int i = 0; i < panel.edgeList.size(); i++) {
+		for (i = 0; i < panel.edgeList.size(); i++) {
 			Edge e = panel.edgeList.get(i);
 			if (e.getOtherEnd(n) != null) {
 				if(path.contains(e.getOtherEnd(n)) == false) { // If it's not in the path..
@@ -377,8 +342,12 @@ public class Graph implements ActionListener, MouseListener {
 				}
 			}
 		}
-		
-		 /*
+		System.out.println("i is " + i);
+		System.out.println("Lenght of path is " + path.size());
+		if (i > 0) {
+			path.remove(path.size()-1);
+		}
+		/*
 		  *			remove the last thing in the path
 		  * make headers and getters for edgeList
 		  * walk through completed list, print out when you're all done with whichever one is the minimum number

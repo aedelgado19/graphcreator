@@ -88,44 +88,21 @@ public class GraphPanel extends JPanel{
 	public void addEdge (Node first, Node second, String newlabel) {
 		edgeList.add(new Edge(first, second, newlabel));
 		
-		boolean result;
 		//check first node then second
 		int firstIndex = 0;
 		int secondIndex = 0;
+		
+		// Gets the index of first and second from nodeList
 		for (int i = 0; i < nodeList.size(); i++) {
 			if (first.equals(nodeList.get(i))) {
 				firstIndex = i;
 			}
 			if (second.equals(nodeList.get(i))) {
 				secondIndex = i;
-			}
-			
-			
+			}			
 		}
 		
-		for (int i = 0; i < conNodeList.size(); i++) {
-			if (first.equals(conNodeList.get(i))) {
-				result = conNodeList.remove(conNodeList.get(i));
-			}
-			
-		}
-		//result = conNodeList.remove(0);
-		result = conNodeList.remove(getNode(first.getLabel()));
-		System.out.println("Result was " + result);
-	//	conNodeList.remove(second);
-/*		
-		for (int j = 0; j < conNodeList.size(); j++) {
-			System.out.println("contents of conNodeList pre removal: " + conNodeList.get(j).getLabel());
-			conNodeList.remove(conNodeList.get(j));
-
-			
-		}
-*/
-		for (int j = 0; j < conNodeList.size(); j++) {
-			System.out.println("contents of conNodeList post removal: " + conNodeList.get(j).getLabel());
-		}
-		
-		
+		// Update adjacency matrix
 		adjacency.get(firstIndex).set(secondIndex, true);
 		adjacency.get(secondIndex).set(firstIndex, true);
 		printAdjacency();
