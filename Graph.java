@@ -83,16 +83,17 @@ public class Graph implements ActionListener, MouseListener {
 		frame.add(west, BorderLayout.WEST);
 		panel.addMouseListener(this);
 
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setVisible(true);
-		
+
 		//east container
+		frame.add(east, BorderLayout.EAST);
 		east.setLayout(new GridLayout(3,1));		
 		east.add(firstNode);
 		east.add(secondNode);
 		east.add(connected);
 		connected.addActionListener(this);
-		frame.add(east, BorderLayout.EAST);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setVisible(true);
+		
 		
 	}
 	
