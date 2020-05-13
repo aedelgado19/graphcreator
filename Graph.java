@@ -3,13 +3,6 @@
  */
 
 
-/*Bugs:
- * color isn't set lol
- * you can still have letter edge labels (supposed to only be number) 7:50 vid 1 of part 3
- * 
- * 
- */
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
@@ -34,31 +27,31 @@ public class Graph implements ActionListener, MouseListener {
 	JTextField labelsTF = new JTextField("A");
 	JTextField firstNode = new JTextField("First");
 	JTextField secondNode = new JTextField("Second");
-	JButton connected = new JButton("Test Connected");
+	JButton connected = new JButton("Check Connection");
 	Container west = new Container();
 	Container east = new Container();
 	Container south = new Container();
 	JTextField salesmanStartTF = new JTextField("A");
-	JButton salesmanB = new JButton("Shortest Path");
+	JButton salesmanB = new JButton("Travelling Salesman");
 	final int NODE_CREATE = 0;
 	final int EDGE_FIRST = 1; //need to click on first circle
 	final int EDGE_SECOND = 2; 
 	int state = NODE_CREATE;
-	char nodeName = 65;
-	char edgeName = 49;
+	char nodeName = 'A';
+	char edgeName = '1';
 	Node first = null;
 	int TotalPathsFound = 0;
+	int cheapestPathCost = 0;
+	String printablePath = "";
+	int a = 0;
+	ArrayList<Node> cheapestActualPath = new ArrayList<Node>();
+	
 	
 	//list tracks what nodes are connected
 	ArrayList<String> connectedList = new ArrayList<String>();
 	
-	//ArrayList<Edge> edgeList = new ArrayList<Edge>();
-	//ArrayList<Node> pathList = new ArrayList<Node>();
-	
 	//list tracks what nodes have been completed
 	ArrayList<ArrayList<Node>> completed = new ArrayList<ArrayList<Node>>();
-	int shortestPath = 0;
-	int distance = 0;
 	
 	public Graph() { //set up graph
 		
@@ -79,7 +72,7 @@ public class Graph implements ActionListener, MouseListener {
 		west.setLayout(new GridLayout(3,1));
 		west.add(nodeB);
 		nodeB.addActionListener(this);
-		//nodeB.setBackground(Color.BLUE);
+		
 
 		west.add(edgeB);
 		edgeB.setOpaque(true);
@@ -127,6 +120,7 @@ public class Graph implements ActionListener, MouseListener {
 		if (state == NODE_CREATE) { //add new node
 			panel.addNode(e.getX(), e.getY(), labelsTF.getText());
 			
+			/*
 			//to make it easier, nodes autofill letters until Z then reset to A
 			if (nodeName < 90) { // 90 = Z
 				nodeName++;
@@ -134,17 +128,21 @@ public class Graph implements ActionListener, MouseListener {
 			else {
 				nodeName = 65; // 65 = A
 			}
+			*/
 			labelsTF.setText(nodeName + "");
+			
+			
 		}
 		else if (state == EDGE_FIRST) { //check to see if you've clicked previous node
 			//pass X and Y coord, get back node
-			if (edgeName < 57) { //57 = 9
-				edgeName++;
+			/*if (edgeName > 49) { //57 = 9
+				edgeName--;
 			}
 			else {
-				edgeName = 49;
+				edgeName = 57;
 			}
-			labelsTF.setText(edgeName + "");
+			*/
+			//labelsTF.setText(edgeName + "");
 			
 			
 			Node n = panel.getNode(e.getX(), e.getY());
@@ -153,6 +151,7 @@ public class Graph implements ActionListener, MouseListener {
 				state = EDGE_SECOND;
 				n.setHighlighted(true);
 			}
+			
 		}
 		//connect edge to second node
 		else if (state == EDGE_SECOND) {
@@ -211,13 +210,6 @@ public class Graph implements ActionListener, MouseListener {
 			nodeB.setBackground(Color.LIGHT_GRAY);
 			state = EDGE_FIRST;
 		}
-		/*
-		if (e.getSource().equals(salesmanB)) {
-			travelling(panel.getNode(salesmanStartTF.getText()), pathList, cost);
-		}
-		*/
-	
-		
 		
 		//check if 2 nodes are connected
 		if (e.getSource().equals(connected)) {
@@ -260,7 +252,7 @@ public class Graph implements ActionListener, MouseListener {
 		
 		if(e.getSource().equals(salesmanB)) {
 			
-			/* Master plan:
+			/* Algorithm:
 			 * 
 			 * 1. get Node that comes from text field to find where the path starts
 			 * 
@@ -279,46 +271,31 @@ public class Graph implements ActionListener, MouseListener {
 			 * 		keep looping
 			 * 		if current path < shortestPath, reassign shortestPath to current path
 			 * 		once finished with all paths, print out the path distance value and what the path actually was (copy path (node names) to bestPath)
-			 * 
-			 * 
+			 *
 			 */
 			
 			
-			//1. get node that comes from text field
-			for (int a = 0; a < panel.nodeList.size(); a++) {
+			//get node that comes from text field
+			for (a = 0; a < panel.nodeList.size(); a++) {
 				connectedList.add(panel.getNode(salesmanStartTF.getText()).getLabel());
 				ArrayList<String> edges = panel.getConnectedLabels(salesmanStartTF.getText()); 
 			}
 			
-			//2. call travelling() to find paths
+			//call travelling() to find paths
+			TotalPathsFound = 0;
 			path.add(panel.getNode(salesmanStartTF.getText()));
 			travelling(panel.getNode(salesmanStartTF.getText()), path, 0);
 			System.out.println("TotalPathsFound " + TotalPathsFound);
-			// 3. Check for disconnected nodes
-			
-			//4. Find cheapest path 
-			/*Node cheapestPath = pathList.get(0);
-			for (int i = 0; i < pathList.size(); i++) {
-				Node currentPath = pathList.get(i);
-				if (currentPath < cheapestPath) {
-					//swap
-					int temp;
-					currentPath = temp;
-					cheapestPath = currentPath;
-					temp = cheapestPath;
-				}
+			for (int i = 0; i < cheapestActualPath.size(); i++) {
+				printablePath += cheapestActualPath.get(i).getLabel();
 			}
-			System.out.println("Finished with all paths");
-			JOptionPane.showMessageDialog(frame, "The cheapest path is " + cheapestPath + "and costs " + cost + ".");	
 			
-			*/
+				JOptionPane.showMessageDialog(frame, "The cheapest path found costs " + cheapestPathCost + " and is: " + printablePath);	
+				
 			
-			
-			
-					
-				}
 		}
-	//}
+	}
+	
 	
 	public void travelling(Node n, ArrayList<Node> path, int total) {
 		//depth-first search: find complete path by going as far as you can in graph, 
@@ -329,8 +306,27 @@ public class Graph implements ActionListener, MouseListener {
 			TotalPathsFound++;
 			for (i = 0; i < path.size(); i++) {
 				System.out.println(path.get(i).getLabel());
-				// Fixme: Save completed path somewhere and also cost
+				
+				
 			}
+			//find cheapest path
+			
+			if (cheapestPathCost == 0) {
+				cheapestPathCost = total;
+				cheapestActualPath = (ArrayList<Node>) path.clone();
+			}
+			else {
+				if (total < cheapestPathCost) {
+					//swap
+					cheapestPathCost = total;
+					//save the actual path
+					cheapestActualPath = (ArrayList<Node>) path.clone();
+					
+					
+				}
+			}
+			
+			
 		}
 		
 		for (i = 0; i < panel.edgeList.size(); i++) {
@@ -342,17 +338,9 @@ public class Graph implements ActionListener, MouseListener {
 				}
 			}
 		}
-		System.out.println("i is " + i);
-		System.out.println("Lenght of path is " + path.size());
 		if (i > 0) {
 			path.remove(path.size()-1);
 		}
-		/*
-		  *			remove the last thing in the path
-		  * make headers and getters for edgeList
-		  * walk through completed list, print out when you're all done with whichever one is the minimum number
-		  * 
-		  */
 		
 	}
 }
